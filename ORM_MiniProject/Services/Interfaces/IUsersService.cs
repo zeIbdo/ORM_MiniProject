@@ -12,6 +12,6 @@ namespace ORM_MiniProject.Services.Interfaces
         Task DeleteUserAsync(int id);
         Task<UserGetDto> LoginAsync(UserLoginDto login);
         Task<List<Orders>>? GetUserOrdersAsync(int id );
-        Task<byte[]> ExportUserOrdersToExcelAsync(int userId);
+        //Task<byte[]> ExportUserOrdersToExcelAsync(int userId);
     }
 }
