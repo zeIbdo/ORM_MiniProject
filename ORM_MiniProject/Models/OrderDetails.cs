@@ -9,5 +9,9 @@ public class OrderDetails
     public decimal PricePerItem { get; set; }
     public Orders Order { get; set; } = null!;
     public Products Product { get; set; } = null!;
+    public override string ToString()
+    {
+        return $"{Quantity}";
+    }
 
 }

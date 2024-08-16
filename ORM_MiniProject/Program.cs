@@ -14,11 +14,13 @@ internal class Program
 {
     static async Task Main(string[] args)
     {
+
         IUsersService usersService = new UserService();
         IOrdersService ordersService = new OrdersService();
         IProductService productService = new ProductService();
         IPaymentService paymentService = new PaymentService();
         IOrderDetailsService orderDetailsService = new OrderDetailsService();
+        ExportService exportService = new ExportService(ordersService);
         Users loginnedUser = new();
         UserMenu:
         Console.WriteLine("1.Register\n" +
@@ -300,7 +302,6 @@ internal class Program
                 Console.WriteLine("4.Get Orders");
                 Console.WriteLine("5.Add OrderDetail");
                 Console.WriteLine("6.Get OrderDetails");
-                Console.WriteLine("6.Get OrderDetails by Order id");
                 Console.WriteLine("0.Exit Order Service");
                 Console.WriteLine("choose one");
                 string orderOption = Console.ReadLine();
@@ -438,6 +439,19 @@ internal class Program
                         }
                         Console.WriteLine("press enter");
                         Console.ReadKey();
+                        goto OrderMenu;
+                    case "7":
+                        string filePath = @"C:\Users\Ibrahim\Desktop\UserOrders\UserOrders.xlsx"; 
+                        bool success =await exportService.ExportUserOrdersToExcel(loginnedUser.Id, filePath);
+
+                        if (success)
+                        {
+                            Console.WriteLine("Excel file created successfully.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Failed to create Excel file.");
+                        }
                         goto OrderMenu;
 
 

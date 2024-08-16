@@ -8,5 +8,9 @@ public class Users
     public string Password { get; set; } = null!;
     public string Address { get; set; } = null!;
     public ICollection<Orders> Orders { get; set; }= new List<Orders>();
+    public override string ToString()
+    {
+        return $"{FullName}";
+    }
 
 }
