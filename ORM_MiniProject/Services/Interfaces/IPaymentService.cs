@@ -5,10 +5,10 @@ namespace ORM_MiniProject.Services.Interfaces
 {
     public interface IPaymentService
     {
-        Task<List<PaymentGetDto>> GetAllPaymentsAsync();
+        Task<List<PaymentGetDto>> GetAllPaymentsAsync(int userId);
         Task<PaymentGetDto> GetPaymentsAsync(int id);
         Task UpdatePaymentAsync(PaymentPutDto payment);
-        Task MakePaymentAsync(PaymentPostDto payment);
+        Task MakePaymentAsync(PaymentPostDto payment,int userId);
         Task DeletePaymentAsync(int id);
     }
 }

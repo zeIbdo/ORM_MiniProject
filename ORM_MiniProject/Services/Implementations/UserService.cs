@@ -20,6 +20,8 @@ namespace ORM_MiniProject.Services.Implementations
         }
         public async Task CreateUserAsync(UserPostDto user)
         {
+            if(string.IsNullOrWhiteSpace(user.FullName)) throw new InvalidUserInformationException("fullname cannot be null");
+            if (string.IsNullOrWhiteSpace(user.Address)) throw new InvalidUserInformationException("address cannot be null");
             if (string.IsNullOrWhiteSpace(user.Email)) throw new InvalidUserInformationException("email cannot be null");
             Regex regex = new Regex(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$");
             if (!regex.IsMatch(user.Email)) throw new InvalidUserInformationException("email formati sehvdir");

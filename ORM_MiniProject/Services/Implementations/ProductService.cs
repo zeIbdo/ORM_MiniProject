@@ -121,6 +121,10 @@ namespace ORM_MiniProject.Services.Implementations
             {
                 throw new InvalidProductException("A product with the same name already exists.");
             }
+            if (string.IsNullOrWhiteSpace(product.Name)) throw new InvalidProductException("Invalid product name");
+            if (string.IsNullOrWhiteSpace(product.Description)) throw new InvalidProductException("Invalid product description");
+            if (product.Stock <= 0) throw new InvalidProductException("stock cannot be lower than zero");
+            if (product.Price < 0) throw new InvalidProductException("price must be greater than zero");
 
             dbProduct.Name = product.Name;
             dbProduct.Price = product.Price;

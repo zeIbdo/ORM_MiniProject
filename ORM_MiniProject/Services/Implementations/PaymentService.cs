@@ -18,9 +18,9 @@ namespace ORM_MiniProject.Services.Implementations
             _ordersRepository = new OrdersRepository();
             _orderDetailsRepository = new OrderDetailsRepository();
         }
-        public async Task MakePaymentAsync(PaymentPostDto payment)
+        public async Task MakePaymentAsync(PaymentPostDto payment,int userId)
         {
-            var order = await _ordersRepository.GetAsync(x => x.Id == payment.OrderId, "OrderDetails");
+            var order = await _ordersRepository.GetAsync(x => x.Id == payment.OrderId&&x.UserId==userId, "OrderDetails");
 
             if (order == null) throw new NotFoundException("Order tapilmadi");
 
@@ -47,21 +47,24 @@ namespace ORM_MiniProject.Services.Implementations
             await _paymentsRepository.SaveChangesAsync();
         }
 
-        public async Task<List<PaymentGetDto>> GetAllPaymentsAsync()
+        public async Task<List<PaymentGetDto>> GetAllPaymentsAsync(int userId)
         {
-            var payments = await _paymentsRepository.GetAllAsync();
+            var payments = await _paymentsRepository.GetAllAsync("Orders");
             List<PaymentGetDto> result = new List<PaymentGetDto>();
             foreach (var payment in payments)
             {
-                PaymentGetDto dto = new PaymentGetDto()
+                if (payment.Order.UserId == userId)
                 {
-                    Id = payment.Id,
-                    Amount = payment.Amount,
-                    Order = payment.Order,
-                    OrderId = payment.OrderId,
-                    PaymentDate = payment.PaymentDate
-                };
-                result.Add(dto);
+                    PaymentGetDto dto = new PaymentGetDto()
+                    {
+                        Id = payment.Id,
+                        Amount = payment.Amount,
+                        Order = payment.Order,
+                        OrderId = payment.OrderId,
+                        PaymentDate = payment.PaymentDate
+                    };
+                    result.Add(dto);
+                }
             }
             return result;
         }
