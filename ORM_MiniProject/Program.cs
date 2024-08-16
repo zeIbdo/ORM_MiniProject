@@ -129,6 +129,7 @@ internal class Program
                 Console.WriteLine("4.Get Product By Id");
                 Console.WriteLine("5.Delete Product");
                 Console.WriteLine("6.Search Products By Name");
+                Console.WriteLine("7.Export orders to excel");
                 Console.WriteLine("0.Exit Porduct Service");
                 Console.WriteLine("choose one");
                 string productServiceOption = Console.ReadLine();
