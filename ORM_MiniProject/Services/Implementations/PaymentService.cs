@@ -14,27 +14,30 @@ namespace ORM_MiniProject.Services.Implementations
         private readonly IOrderDetailsRepository _orderDetailsRepository;
         public PaymentService()
         {
-            _paymentsRepository=new PaymentsRepository();
-            _ordersRepository=new OrdersRepository();
-            _orderDetailsRepository=new OrderDetailsRepository();
+            _paymentsRepository = new PaymentsRepository();
+            _ordersRepository = new OrdersRepository();
+            _orderDetailsRepository = new OrderDetailsRepository();
         }
         public async Task MakePaymentAsync(PaymentPostDto payment)
         {
-            var order = await _ordersRepository.GetAsync(x=>x.Id==payment.OrderId);
-            if (order==null) throw new NotFoundException("Order tapilmadi");
-            if (payment.Amount < 0) throw new InvalidPaymentException("Amount 0 dan kicik ola bilmez");
-            foreach (var item in await _orderDetailsRepository.GetAllAsync())
+            var order = await _ordersRepository.GetAsync(x => x.Id == payment.OrderId, "OrderDetails");
+
+            if (order == null) throw new NotFoundException("Order tapilmadi");
+
+            foreach (var item in order.OrderDetails)
             {
-                if (item.OrderId == payment.OrderId) payment.Amount += item.Quantity * item.PricePerItem;
+                payment.Amount += item.Quantity * item.PricePerItem;
             }
+            if (order.OrderDetails == null || !order.OrderDetails.Any())
+                throw new InvalidPaymentException("Cannot make a payment for an order with no order details");
             Payments newPayment = new Payments()
             {
                 PaymentDate = DateTime.UtcNow,
-               Amount = payment.Amount,
+                Amount = payment.Amount,
                 OrderId = payment.OrderId
             };
             await _paymentsRepository.CreateAsync(newPayment);
-            await _ordersRepository.SaveChangesAsync();
+            await _paymentsRepository.SaveChangesAsync();
         }
 
         public async Task DeletePaymentAsync(int id)
@@ -70,21 +73,21 @@ namespace ORM_MiniProject.Services.Implementations
             {
                 Id = payment.Id,
                 Amount = payment.Amount,
-                Order=payment.Order,
-                OrderId=payment.OrderId,
-                PaymentDate= payment.PaymentDate
+                Order = payment.Order,
+                OrderId = payment.OrderId,
+                PaymentDate = payment.PaymentDate
             };
             return dto;
         }
 
         public async Task UpdatePaymentAsync(PaymentPutDto payment)
         {
-            var dbPayment =await _getPaymentById(payment.Id);
+            var dbPayment = await _getPaymentById(payment.Id);
             var orderExists = await _ordersRepository.IsExistAsync(x => x.Id == payment.OrderId);
             if (!orderExists) throw new NotFoundException("Order tapilmadi");
             if (payment.Amount < 0) throw new InvalidPaymentException("Amount 0 dan kicik ola bilmez");
 
-            dbPayment.Amount= payment.Amount;
+            dbPayment.Amount = payment.Amount;
             dbPayment.OrderId = payment.OrderId;
 
             _paymentsRepository.Update(dbPayment);

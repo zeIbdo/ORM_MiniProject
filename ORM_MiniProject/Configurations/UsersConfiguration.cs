@@ -13,7 +13,6 @@ namespace ORM_MiniProject.Configurations
             builder.Property(a=>a.Address).IsRequired().HasMaxLength(255);
             builder.Property(a=>a.Email).IsRequired().HasMaxLength(255);
             builder.HasIndex(a => a.Email).IsUnique();
-            builder.HasMany(x=>x.Orders).WithOne(o=>o.User).HasForeignKey(o=>o.UserId).OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

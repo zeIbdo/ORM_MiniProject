@@ -12,13 +12,14 @@ namespace ORM_MiniProject
 {
     internal class Program
     {
-        static async void Main(string[] args)
+        static async Task Main(string[] args)
         {
             IUsersService usersService = new UserService();
             IOrdersService ordersService = new OrdersService();
             IProductService productService = new ProductService();
             IPaymentService paymentService = new PaymentService();
             IOrderDetailsService orderDetailsService = new OrderDetailsService();
+            Users loginnedUser = new();
             UserMenu:
             Console.WriteLine("1.Register\n" +
                 "2.Login\n"+
@@ -77,6 +78,11 @@ namespace ORM_MiniProject
                             Password = loginPassword
                         };
                         await usersService.LoginAsync(userLoginDto);
+                        foreach(var item in await usersService.GetAllUsersAsync())
+                        {
+                            if (item.Email == loginMail)
+                                loginnedUser.Id = item.Id;
+                        }
                     }
                     catch (UserAuthenticationException e)
                     {
@@ -135,7 +141,6 @@ namespace ORM_MiniProject
                         case "1":
                             try
                             {
-                                ProductPostDto product = new ProductPostDto();
                                 Console.Write("Enter the product name:");
                                 string productName = Console.ReadLine();
                                 Console.Write("Enter the product price:");
@@ -143,7 +148,14 @@ namespace ORM_MiniProject
                                 Console.Write("Enter the product stock:");
                                 int productStock = int.Parse(Console.ReadLine());
                                 Console.Write("Enter the description:");
-                                product.Description = Console.ReadLine();
+                                string productDescription = Console.ReadLine();
+                                ProductPostDto product = new ProductPostDto()
+                                {
+                                    Name = productName,
+                                    Description = productDescription,
+                                    Price = productPrice,
+                                    Stock = productStock
+                                };
                                 await productService.CreateProductAsync(product);
                                 Console.WriteLine("press enter");
                                 Console.ReadKey();
@@ -301,9 +313,10 @@ namespace ORM_MiniProject
                         case "1":
                             try
                             {
-                                OrderPostDto order = new OrderPostDto();
-                                Console.WriteLine("Enter the User Id:");
-                                int orderUserId = int.Parse(Console.ReadLine());
+                                OrderPostDto order = new OrderPostDto()
+                                {
+                                    UserId = loginnedUser.Id
+                                };                               
                                 await ordersService.CreateOrderAsync(order);
                                 Console.WriteLine("press enter");
                                 Console.ReadKey();
@@ -321,7 +334,7 @@ namespace ORM_MiniProject
                             {
                                 Console.WriteLine("enter order id for cancel");
                                 int cancelId = int.Parse(Console.ReadLine());
-                                await ordersService.CancelOrderAsync(cancelId);
+                                await ordersService.CancelOrderAsync(cancelId,loginnedUser.Id);
                                 Console.WriteLine("press enter");
                                 Console.ReadKey();
                                 goto OrderMenu;
@@ -345,7 +358,7 @@ namespace ORM_MiniProject
                             {
                                 Console.WriteLine("Enter Order Id for Complete:");
                                 int completeId = int.Parse(Console.ReadLine());
-                                await ordersService.CompleteOrderAsync(completeId);
+                                await ordersService.CompleteOrderAsync(completeId, loginnedUser.Id);
                                 Console.WriteLine("press enter");
                                 Console.ReadKey();
                                 goto OrderMenu;
@@ -368,6 +381,7 @@ namespace ORM_MiniProject
                             var orders = await ordersService.GetAllOrdersAsync();
                             foreach (var order in orders)
                             {
+                                if(order.UserId==loginnedUser.Id)
                                 Console.WriteLine($"Order id:{order.Id}   Total Amount:{order.TotalAmount} Status:{order.Status} Order date:{order.OrderDate} user id: {order.UserId}");
                             }
                             Console.WriteLine("press enter");
@@ -382,12 +396,10 @@ namespace ORM_MiniProject
                                 int odProductId = int.Parse(Console.ReadLine());
                                 Console.WriteLine("Enter the quantity");
                                 int odQuantity = int.Parse(Console.ReadLine());
-                                Console.WriteLine("Enter price for per item:");
-                                decimal odPricePerItem = decimal.Parse(Console.ReadLine());
+                               
                                 OrderDetailsPostDto Od = new OrderDetailsPostDto()
                                 {
                                     OrderId = odOrderId,
-                                    PricePerItem = odPricePerItem,
                                     ProductId = odProductId,
                                     Quantity = odQuantity
                                 };

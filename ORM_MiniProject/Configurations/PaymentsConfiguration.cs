@@ -18,7 +18,7 @@ namespace ORM_MiniProject.Configurations
             builder.HasKey(p => p.Id);
             builder.Property(p => p.Amount).IsRequired().HasColumnType("decimal(10,2)");
             builder.Property(p => p.PaymentDate).IsRequired();
-            builder.HasCheckConstraint("CK_Payments_Amount_Positive", "[Amount]>0");
+            builder.HasCheckConstraint("CK_Payments_Amount_Positive", "[Amount]>=0");
         }
     }
 }

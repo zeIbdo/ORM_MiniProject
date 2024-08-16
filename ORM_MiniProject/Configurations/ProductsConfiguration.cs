@@ -16,7 +16,6 @@ namespace ORM_MiniProject.Configurations
             builder.Property(p => p.Description).IsRequired().HasMaxLength(500);
             builder.Property(p => p.CreatedTime).IsRequired();
             builder.Property(p => p.UpdatedTime).IsRequired();
-            builder.HasMany(x=>x.OrderDetails).WithOne(o=>o.Product).HasForeignKey(o => o.ProductId).OnDelete(DeleteBehavior.Cascade);
             builder.HasCheckConstraint("CK_Products_Price_Positive", "[Price] > 0");
             builder.HasCheckConstraint("CK_Products_Stock_NonNegative", "[Stock] >= 0");
         }

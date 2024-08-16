@@ -10,8 +10,8 @@ namespace ORM_MiniProject.Services.Interfaces
         Task<OrderGetDto> GetOrderAsync(int id);
         Task UpdateOrderAsync(OrderPutDto order);
         Task CreateOrderAsync(OrderPostDto order);
-        Task CancelOrderAsync(int id);
-        Task CompleteOrderAsync(int id);
+        Task CancelOrderAsync(int id,int userId);
+        Task CompleteOrderAsync(int id,int userId);
         Task AddOrderDetailAsync(OrderDetailsPostDto detailsPostDto);
         Task<List<OrderDetailsGetDto>> GetOrderDetailByOrderIdAsync(int orderId);
     }

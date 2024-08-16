@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.Office2010.Excel;
-using ORM_MiniProject.DTOs.OrderDetailDTOs;
+﻿using ORM_MiniProject.DTOs.OrderDetailDTOs;
 using ORM_MiniProject.DTOs.OrderDTOs;
 using ORM_MiniProject.Exceptions;
 using ORM_MiniProject.Models;
@@ -30,31 +29,57 @@ namespace ORM_MiniProject.Services.Implementations
             if (!userExists) { throw new InvalidOrderException("User tapilmadi"); }
             if (order.TotalAmount < 0) throw new InvalidOrderException("total amount must be greater than zero");
             var orderDetails = await GetOrderDetailByOrderIdAsync(order.Id);
-            foreach (var orderDetail in orderDetails)
-            {
-                order.TotalAmount += orderDetail.PricePerItem * orderDetail.Quantity;
-            }
+            //foreach (var orderDetail in orderDetails)
+            //{
+            //    order.TotalAmount += orderDetail.PricePerItem * orderDetail.Quantity;
+            //}
             Orders newOrder = new Orders()
             {
                 UserId = order.UserId,
                 Status = Enums.OrderStatus.Pending,
-                TotalAmount = order.TotalAmount,
+                TotalAmount = 0,
                 OrderDate = DateTime.UtcNow
             };
             await _ordersRepository.CreateAsync(newOrder);
             await _ordersRepository.SaveChangesAsync();
         }
 
-        public async Task CancelOrderAsync(int id)
+        public async Task CancelOrderAsync(int id,int userId)
         {
-            var order = await _getOrderById(id);
+            Orders order=null;
+            foreach (var item in await _ordersRepository.GetAllAsync())
+            {
+               
+                if (item.UserId == userId && item.Id == id)
+                     order = item;
+            }
+            if (order == null) throw new NotFoundException("order not found");
             if (order.Status == Enums.OrderStatus.Cancelled) throw new OrderAlreadyCancelledException("Order already cancelled");
             order.Status = Enums.OrderStatus.Cancelled;
+            foreach (var item in await _orderDetailsRepository.GetAllAsync())
+            {
+                if (item.OrderId == id)
+                {
+                    foreach(var item2 in await _productsRepository.GetAllAsync())
+                    {
+                        if (item2.Id == item.ProductId) item2.Stock += item.Quantity;
+                    }
+                }
+            }
+
             await _ordersRepository.SaveChangesAsync();
         }
-        public async Task CompleteOrderAsync(int id)
+        public async Task CompleteOrderAsync(int id,int userId)
         {
-            var order = await _getOrderById(id);
+            Orders order=null;
+            foreach (var item in await _ordersRepository.GetAllAsync())
+            {
+
+                if (item.UserId == userId && item.Id == id)
+                    order = item;
+            }
+
+            if (order == null) throw new NotFoundException("order not found");
             if (order.Status == Enums.OrderStatus.Completed) throw new OrderAlreadyCompletedException("Order already completed");
             //foreach (var orderDetail in orderDetails)
             //{
@@ -68,7 +93,7 @@ namespace ORM_MiniProject.Services.Implementations
 
         public async Task<List<OrderGetDto>> GetAllOrdersAsync()
         {
-            var orders = await _ordersRepository.GetAllAsync("OrderDetails,Payment,User");
+            var orders = await _ordersRepository.GetAllAsync("OrderDetails","User");
             List<OrderGetDto> result = new List<OrderGetDto>();
             foreach (var order in orders)
             {
@@ -130,15 +155,14 @@ namespace ORM_MiniProject.Services.Implementations
 
         public async Task AddOrderDetailAsync(OrderDetailsPostDto orderDetail)
         {
-            var orderExists = await _ordersRepository.IsExistAsync(x => x.Id == orderDetail.OrderId);
-            if (!orderExists) throw new NotFoundException("Order not found");
+            var order = await _ordersRepository.GetAsync(x => x.Id == orderDetail.OrderId);
+            if (order==null) throw new NotFoundException("Order not found");
 
             //var productExists = await _productsRepository.IsExistAsync(x => x.Id == orderDetail.ProductId);
             //if (!productExists) throw new NotFoundException("Product not found");
             var product = await _productsRepository.GetAsync(x=>x.Id == orderDetail.ProductId);
             if (product == null) throw new NotFoundException("product not found");
             if (orderDetail.Quantity <= 0) throw new InvalidOrderDetailException("Quantity must be greater than zero");
-            if (orderDetail.PricePerItem <= 0) throw new InvalidOrderDetailException("Price per item must be greater than zero");
             if (product.Stock - orderDetail.Quantity < 0) throw new InvalidOrderDetailException("order quantity cannot be higher product than stock");
             product.Stock-=orderDetail.Quantity;
             OrderDetails newOrderDetail = new OrderDetails
@@ -146,11 +170,13 @@ namespace ORM_MiniProject.Services.Implementations
                 OrderId = orderDetail.OrderId,
                 ProductId = orderDetail.ProductId,
                 Quantity = orderDetail.Quantity,
-                PricePerItem =product.Price
+                PricePerItem = product.Price
             };
+            order.TotalAmount += newOrderDetail.Quantity * newOrderDetail.PricePerItem;
 
             await _orderDetailsRepository.CreateAsync(newOrderDetail);
             await _orderDetailsRepository.SaveChangesAsync();
+            await _productsRepository.SaveChangesAsync();
         }
 
         public async Task<List<OrderDetailsGetDto>> GetOrderDetailByOrderIdAsync(int orderId)
