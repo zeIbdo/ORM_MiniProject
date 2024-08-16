@@ -49,7 +49,7 @@ namespace ORM_MiniProject.Services.Implementations
 
         public async Task<List<PaymentGetDto>> GetAllPaymentsAsync(int userId)
         {
-            var payments = await _paymentsRepository.GetAllAsync("Orders");
+            var payments = await _paymentsRepository.GetAllAsync("Order");
             List<PaymentGetDto> result = new List<PaymentGetDto>();
             foreach (var payment in payments)
             {

@@ -303,6 +303,7 @@ internal class Program
                 Console.WriteLine("4.Get Orders");
                 Console.WriteLine("5.Add OrderDetail");
                 Console.WriteLine("6.Get OrderDetails");
+                Console.WriteLine("7.Export orders to excel");
                 Console.WriteLine("0.Exit Order Service");
                 Console.WriteLine("choose one");
                 string orderOption = Console.ReadLine();
@@ -519,38 +520,5 @@ internal class Program
         }
         
     }
-    void ValidateInput(string input, string fieldName)
-    {
-        if (string.IsNullOrWhiteSpace(input))
-        {
-            throw new InvalidOrderException($"{fieldName} cannot be empty or whitespace.");
-        }
-    }
-
-    int ValidateIntegerInput(string input, string fieldName)
-    {
-        if (!int.TryParse(input, out int value))
-        {
-            throw new InvalidOrderException($"{fieldName} must be a valid integer.");
-        }
-        return value;
-    }
-
-    decimal ValidateDecimalInput(string input, string fieldName)
-    {
-        if (!decimal.TryParse(input, out decimal value))
-        {
-            throw new InvalidOrderException($"{fieldName} must be a valid decimal number.");
-        }
-        return value;
-    }
-
-    DateTime ValidateDateInput(string input, string fieldName)
-    {
-        if (!DateTime.TryParse(input, out DateTime date))
-        {
-            throw new InvalidOrderException($"{fieldName} must be a valid date in the format yyyy-MM-dd.");
-        }
-        return date;
-    }
+ 
 }

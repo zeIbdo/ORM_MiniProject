@@ -63,11 +63,13 @@ namespace ORM_MiniProject.Services.Implementations
                     foreach(var item2 in await _productsRepository.GetAllAsync())
                     {
                         if (item2.Id == item.ProductId) item2.Stock += item.Quantity;
+                        _productsRepository.Update(item2);
                     }
                 }
             }
 
             await _ordersRepository.SaveChangesAsync();
+            await _productsRepository.SaveChangesAsync();
         }
         public async Task CompleteOrderAsync(int id,int userId)
         {
@@ -165,6 +167,7 @@ namespace ORM_MiniProject.Services.Implementations
             if (orderDetail.Quantity <= 0) throw new InvalidOrderDetailException("Quantity must be greater than zero");
             if (product.Stock - orderDetail.Quantity < 0) throw new InvalidOrderDetailException("order quantity cannot be higher product than stock");
             product.Stock-=orderDetail.Quantity;
+             _productsRepository.Update(product);
             OrderDetails newOrderDetail = new OrderDetails
             {
                 OrderId = orderDetail.OrderId,
@@ -173,7 +176,7 @@ namespace ORM_MiniProject.Services.Implementations
                 PricePerItem = product.Price
             };
             order.TotalAmount += newOrderDetail.Quantity * newOrderDetail.PricePerItem;
-
+            _ordersRepository.Update(order);
             await _orderDetailsRepository.CreateAsync(newOrderDetail);
             await _orderDetailsRepository.SaveChangesAsync();
             await _productsRepository.SaveChangesAsync();
